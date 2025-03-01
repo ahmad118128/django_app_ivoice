@@ -2,9 +2,7 @@ from django.db import models
 from customer.models import Customer
 from product.models import Product
 
-
-
-# Choices array
+# Choice options for different fields
 PAYMENT_METHODS = [
     ('cash', 'Cash'),
     ('credit_card', 'Credit Card'),
@@ -23,72 +21,47 @@ PAYMENT_STATUSES = [
     ('cancelled', 'Cancelled'),
 ]
 
- 
-##### ERD #####
-# Table Invoice {
-#   id integer [primary key]
-#   invoice_number varchar [unique] 
-#   customer_id integer [not null]
-#   currency_unit varchar
-#   payment_method varchar
-#   discount_type varchar
-#   reference varchar
-#   total_amount numeric
-#   total_payment numeric
-#   vat numeric 
-#   discount numeric
-#   payment_status varchar
-#   issue_date timestamp
-#   due_date timestamp
-#   created_at timestamp
-#   updated_at timestamp
-# }
 class Invoice(models.Model):
-    id = models.AutoField(primary_key=True)
-    invoice_number = models.CharField(max_length=255, unique=True)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices')  # هر فاکتور مربوط به یک مشتری است
-    currency_unit = models.CharField(max_length=10, blank=True, null=True)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, blank=True, null=True)
-    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, blank=True, null=True)
-    reference = models.CharField(max_length=255, blank=True, null=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    total_payment = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    vat = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUSES, blank=True, null=True)
-    issue_date = models.DateTimeField(blank=True, null=True)
-    due_date = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    invoice_number = models.CharField(max_length=255, unique=True, verbose_name="Invoice Number")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices', verbose_name="Customer")
+    currency_unit = models.CharField(max_length=10, blank=True, null=True, verbose_name="Currency Unit")
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, blank=True, null=True, verbose_name="Payment Method")
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, blank=True, null=True, verbose_name="Discount Type")
+    reference = models.CharField(max_length=255, blank=True, null=True, verbose_name="Reference")
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Total Amount")
+    total_payment = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Total Payment")
+    vat = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="VAT")
+    discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Discount")
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUSES, blank=True, null=True, verbose_name="Payment Status")
+    issue_date = models.DateTimeField(blank=True, null=True, verbose_name="Issue Date")
+    due_date = models.DateTimeField(blank=True, null=True, verbose_name="Due Date")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
-    def __str__(self):
-        return f"Invoice {self.invoice_number}"
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Invoice"
+        verbose_name_plural = "Invoices"
 
-# Table InvoiceItem {
-#   id integer [primary key]
-#   invoice_id integer [not null]
-#   product_id integer [not null]
-#   quantity integer
-#   unit_count integer
-#   amount_text varchar
-#   amount_numeric numeric 
-#   vat_percent numeric
-#   discount_percent numeric
-#   created_at timestamp
-#   updated_at timestamp
-# }
+    def __str__(self) -> str:
+        return f"Invoice {self.invoice_number} - {self.customer.name}"
+
 class InvoiceItem(models.Model):
-    id = models.AutoField(primary_key=True)
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='invoice_items')
-    quantity = models.IntegerField(blank=True, null=True)
-    unit_count = models.IntegerField(blank=True, null=True)
-    amount_text = models.CharField(max_length=255, blank=True, null=True)
-    amount_numeric = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True) 
-    vat_percent = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items', verbose_name="Invoice")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='invoice_items', verbose_name="Product")
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
+    unit_count = models.PositiveIntegerField(default=1, verbose_name="Unit Count")
+    amount_text = models.CharField(max_length=255, blank=True, null=True, verbose_name="Amount (Text)")
+    amount_numeric = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Amount (Numeric)")
+    vat_percent = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="VAT (%)")
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name="Discount (%)")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
-    def __str__(self):
-        return f"InvoiceItem {self.id} (Invoice {self.invoice.invoice_number}, Product {self.product.part_number})"
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Invoice Item"
+        verbose_name_plural = "Invoice Items"
+
+    def __str__(self) -> str:
+        return f"Invoice {self.invoice.invoice_number} - Product {self.product.part_number}"

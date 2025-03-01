@@ -1,11 +1,8 @@
 from rest_framework import generics
+from django.views.generic import TemplateView
+from rest_framework.exceptions import NotFound
 from .models import Invoice
 from .serializers import InvoiceSerializer
-# from django.shortcuts import render
-# from django.http import HttpResponse
-# from django.views import View
-from django.views.generic import TemplateView
-# Create your views here.
 
 class InvoiceListCreateView(generics.ListCreateAPIView):
     queryset = Invoice.objects.all()
@@ -15,11 +12,11 @@ class InvoiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
 
-# class InvoicePageView(View):
-#     def get(self , request):
-#         return render(request ,'invoice.html')
-
+    def get_object(self):
+        try:
+            return super().get_object()
+        except Invoice.DoesNotExist:
+            raise NotFound({"error": "Invoice not found"})
 
 class InvoicePageView(TemplateView):
-    template_name = 'invoice.html'
-
+    template_name = 'invoice.html'  # Ensure 'invoice.html' exists in the templates folder

@@ -1,10 +1,11 @@
 from django.db import models
 
-# Create your models here.
+# Model representing a blog post
 class Post(models.Model):
-    title = models.CharField(max_length=255)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    title: str = models.CharField(max_length=255)  # Title of the post
+    content: str = models.TextField()  # Content of the post
+    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)  # Timestamp when the post was created
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns a string representation of the post (title)."""
         return self.title
